@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>multi-clock-v2.3.3-Embedded-PWA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0055aa">
+
+<!-- Embedded Manifest -->
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTXVsdGkgQ2xvY2sgRW1iZWRkZWQgUFdBIiwic2hvcnRfbmFtZSI6Ik11bHRpQ2xvY2siLCJzdGFydF91cmwiOiJpbmRleC5odG1sIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2VlZjZmZiIsInRoZW1lX2NvbG9yIjoiIzAwNTVhYSIsImljb25zIjpbeyJzcmMiOiJkYXRhOmltYWdlL3BuZztiYXNlNjQsaVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQU1BQUFBRUFETzRrUUFBQldTd0hBQUFHNVVsRUFWUjRuTzNkN1hMYk9neUVZVGpUVzNRdTBybEk5MGVyeExFbFM2UkVZUUc4ejh5Wjh6VnBiSEtYb04wa3ZkajFaanZjOTN3d2NLQkx6d2Y5NmZnWVFnOUZqN25jWElhV0FoQjhSREZsZGJVSUg0Mi9JQkRKYW03WEpnREJSM1J...
+}]">
+
+<!-- Icons -->
+<link rel="icon" sizes="192x192" href="data:image/png;base64,iVBOR... (your 192 icon) ...">
+<link rel="icon" sizes="512x512" href="data:image/png;base64,iVBOR... (your 512 icon) ...">
+
+<style>
+    :root {
+        --bg: #eef6ff;
+        --text-main: #111827;
+        --card-bg: #ffffff;
+        --card-shadow: rgba(0,0,0,0.15);
+        --accent: #0055aa;
+        --subtle: #4b5563;
+    }
+    body.dark {
+        --bg: #060b11;
+        --text-main: #e5e7eb;
+        --card-bg: #111827;
+        --card-shadow: rgba(0,0,0,0.7);
+        --accent: #63b3ff;
+        --subtle: #9ca3af;
+    }
+    body {
+        font-family: Arial;
+        background: var(--bg);
+        color: var(--text-main);
+        margin: 0;
+        padding: 0;
+        text-align: center;
+    }
+
+    header {
+        background: var(--accent);
+        color: white;
+        padding: 12px;
+        font-size: 1.4rem;
+        font-weight: bold;
+    }
+
+    #topBar {
+        padding: 12px;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .top-button {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+        border-radius: 20px;
+        border: 1px solid #ccd4ff;
+        background: #ffffff;
+        cursor: pointer;
+    }
+    body.dark .top-button {
+        background: #1f2937;
+        border-color: #4b5563;
+        color: var(--text-main);
+    }
+
+    .section-title {
+        margin-top: 18px;
+        margin-bottom: 6px;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        color: var(--accent);
+        font-weight: bold;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 14px;
+        padding: 6px 12px;
+    }
+
+    .card {
+        position: relative;
+        background: var(--card-bg);
+        padding: 16px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px var(--card-shadow);
+        text-align: center;
+    }
+
+    .hide-btn {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        background: rgba(0,0,0,0.25);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        cursor: pointer;
+        font-size: 0.8rem;
+        padding: 4px 6px;
+    }
+    body.dark .hide-btn { background: rgba(255,255,255,0.25); }
+
+    .zone { font-size: 1.1rem; font-weight: bold; margin-bottom: 4px; }
+    .clock { font-size: 1.9rem; color: var(--accent); font-weight: bold; }
+    .date { color: var(--subtle); font-size: 0.9rem; }
+    .sun { font-size: 0.85rem; margin-top: 4px; color: var(--subtle); }
+
+</style>
+</head>
+
+<body>
+
+<header>Multi-Clock v2.3.3 — Embedded PWA</header>
+
+<div id="topBar">
+    <button id="installBtn" class="top-button" style="display:none;">⬇ Install</button>
+    <button id="themeToggle" class="top-button">🌙 Dark Mode</button>
+    <button id="gpsBtn" class="top-button">📍 Get Position</button>
+    <button id="restoreBtn" class="top-button">Restore Windows</button>
+</div>
+
+<div id="gpsBox" style="margin-top:4px;color:var(--subtle);font-size:0.9rem;">
+    GPS: (press "Get Position")
+</div>
+<!-- ========================= -->
+<!-- ===== CANADA ZONES ===== -->
+<!-- ========================= -->
+
+<div class="section-title">— CANADA TIMEZONES —</div>
+
+<div class="grid">
+
+    <div class="card" data-card-id="pt">
+        <button class="hide-btn" onclick="hideCard(this)">🙈</button>
+        <div class="zone">Pacific Time (PT)</div>
+        <div id="pt" class="clock"></div>
+        <div id="ptd" class="date"></div>
+        <div id="ptSun" class="sun"></div>
+    </div>
+
+    <div class="card" data-card-id="mt">
+        <button class="hide-btn" onclick="hideCard(this)">🙈</button>
+        <div class="zone">Mountain Time (MT)</div>
+        <div id="mt" class="clock"></div>
+        <div id="mtd" class="date"></div>
+        <div id="mtSun" class="sun"></div>
+    </div>
+
+    <div class="card" data-card-id="ct">
+        <button class="hide-btn" onclick="hideCard(this)">🙈</button>
+        <div class="zone">Central Time (CT)</div>
+        <div id="ct" class="clock"></div>
+        <div id="ctd" class="date"></div>
+        <div id="ctSun" class="sun"></div>
+    </div>
+
+    <div class="card" data-card-id="et">
+        <button class="hide-btn" onclick="hideCard(this)">🙈</button>
+        <div class="zone">Eastern Time (ET)</div>
+        <div id="et" class="clock"></div>
+        <div id="etd" class="date"></div>
+        <div id="etSun" class="sun"></div>
+    </div>
+
+    <div class="card" data-card-id="at">
+        <button class="hide-btn" onclick="hideCard(this)">🙈</button>
+        <div class="zone">Atlantic Time (AT)</div>
+        <div id="at" class="clock"></div>
+        <div id="atd" class="date"></div>
+        <div id="atSun" class="sun"></div>
+    </div>
+
+    <div class="card" data-card-id="nt">
+        <button class="hide-btn" onclick="hideCard(this)">🙈</button>
+        <div class="zone">Newfoundland Time (NT)</div>
+        <div id="nt" class="clock"></div>
+        <div id="ntd" class="date"></div>
+        <div id="ntSun" class="sun"></div>
+    </div>
+
+</div>
+
+<!-- =========================== -->
+<!-- ===== NO-DST REGIONS ===== -->
+<!-- =========================== -->
+
+<div class="section-title">— NO-DST REGIONS —</div>
+
+<div class="grid">
+
+    <div class="card" data-card-id="sk">
+        <button class="hide-btn" onclick="hideCard(this)">🙈</button>
+        <div class="zone">Saskatchewan (No DST)</div>
+        <div id="sk" class="clock"></div>
+        <div id="skd" class="date"></div>
+        <div id="skSun" class="sun"></div>
+    </div>
+
+    <div class="card" data-card-id="yk">
+        <button class="hide-btn" onclick="hideCard(this)">🙈</button>
+        <div class="zone">Yukon (No DST)</div>
+        <div id="yk" class="clock"></div>
+        <div id="ykd" class="date"></div>
+        <div id="ykSun" class="sun"></div>
+    </div>
+
+    <div class="card" data-card-id="nu">
+        <button class="hide-btn" onclick="hideCard(this)">🙈</button>
+        <div class="zone">Nunavut – Coral Harbour (No DST)</div>
+        <div id="nu" class="clock"></div>
+        <div id="nud" class="date"></div>
+        <div id="nuSun" class="sun"></div>
+    </div>
+
+</div>
+<!-- ============================ -->
+<!-- ===== WORLD TRAVELLER ===== -->
+<!-- ============================ -->
+
+<div class="section-title">— WORLD CLOCK —</div>
+
+<div class="grid">
+    <div class="card" data-card-id="world">
+        <button class="hide-btn" onclick="hideCard(this)">🙈</button>
+
+        <div class="zone">World Traveller Clock</div>
+
+<select id="worldZone" style="padding:6px;border-radius:6px;">
+
+    <!-- North America -->
+    <option value="UTC">UTC (Universal)</option>
+    <option value="America/Toronto">Toronto</option>
+    <option value="America/New_York">New York</option>
+    <option value="America/Chicago">Chicago</option>
+    <option value="America/Denver">Denver</option>
+    <option value="America/Los_Angeles">Los Angeles</option>
+    <option value="America/Vancouver">Vancouver</option>
+    <option value="America/Phoenix">Phoenix (No DST)</option>
+    <option value="America/Anchorage">Anchorage</option>
+    <option value="Pacific/Honolulu">Hawaii</option>
+    <option value="America/Mexico_City">Mexico City</option>
+
+    <!-- South America -->
+    <option value="America/Bogota">Bogotá</option>
+    <option value="America/Lima">Lima</option>
+    <option value="America/Santiago">Santiago</option>
+    <option value="America/Argentina/Buenos_Aires">Buenos Aires</option>
+    <option value="America/Sao_Paulo">São Paulo</option>
+
+    <!-- Europe -->
+    <option value="Europe/London">London</option>
+    <option value="Europe/Dublin">Dublin</option>
+    <option value="Europe/Paris">Paris</option>
+    <option value="Europe/Berlin">Berlin</option>
+    <option value="Europe/Madrid">Madrid</option>
+    <option value="Europe/Rome">Rome</option>
+    <option value="Europe/Amsterdam">Amsterdam</option>
+    <option value="Europe/Stockholm">Stockholm</option>
+    <option value="Europe/Zurich">Zurich</option>
+    <option value="Europe/Athens">Athens</option>
+    <option value="Europe/Moscow">Moscow</option>
+
+    <!-- Africa -->
+    <option value="Africa/Cairo">Cairo</option>
+    <option value="Africa/Johannesburg">Johannesburg</option>
+    <option value="Africa/Nairobi">Nairobi</option>
+    <option value="Africa/Casablanca">Casablanca</option>
+
+    <!-- Middle East -->
+    <option value="Asia/Dubai">Dubai</option>
+    <option value="Asia/Riyadh">Riyadh</option>
+    <option value="Asia/Jerusalem">Jerusalem</option>
+    <option value="Asia/Tehran">Tehran</option>
+
+    <!-- Asia -->
+    <option value="Asia/Kolkata">India (IST)</option>
+    <option value="Asia/Kathmandu">Nepal (NPT)</option>
+    <option value="Asia/Bangkok">Bangkok</option>
+    <option value="Asia/Hong_Kong">Hong Kong</option>
+    <option value="Asia/Shanghai">Shanghai</option>
+    <option value="Asia/Tokyo">Tokyo</option>
+    <option value="Asia/Seoul">Seoul</option>
+    <option value="Asia/Singapore">Singapore</option>
+    <option value="Asia/Kuala_Lumpur">Kuala Lumpur</option>
+
+    <!-- Oceania -->
+    <option value="Australia/Perth">Perth</option>
+    <option value="Australia/Adelaide">Adelaide</option>
+    <option value="Australia/Sydney">Sydney</option>
+    <option value="Pacific/Auckland">Auckland</option>
+    <option value="Pacific/Fiji">Fiji</option>
+
+</select>
+
+
+        <div id="worldClock" class="clock"></div>
+        <div id="worldDate" class="date"></div>
+        <div id="worldSun" class="sun"></div>
+    </div>
+</div>
+
+
+
+<!-- ============================ -->
+<!-- ===== STOPWATCH & TIMER ==== -->
+<!-- ============================ -->
+
+<div class="section-title">— TIMER & STOPWATCH —</div>
+
+<div class="grid">
+
+    <!-- Stopwatch -->
+    <div class="card" data-card-id="sw">
+        <button class="hide-btn" onclick="hideCard(this)">🙈</button>
+
+        <div class="zone">Stopwatch</div>
+        <div id="swDisplay" class="clock" style="font-size:1.6rem;">00:00:00.0</div>
+
+        <div style="margin-top:8px;">
+            <button id="swStart" class="top-button">Start</button>
+            <button id="swStop" class="top-button">Stop</button>
+            <button id="swLap" class="top-button">Lap</button>
+            <button id="swReset" class="top-button">Reset</button>
+        </div>
+
+        <ul id="lapList" style="text-align:left;max-height:120px;overflow-y:auto;margin-top:10px;"></ul>
+    </div>
+
+    <!-- Countdown Timer -->
+    <div class="card" data-card-id="timer">
+        <button class="hide-btn" onclick="hideCard(this)">🙈</button>
+        <div class="zone">Countdown Timer</div>
+
+        <div style="margin-bottom:8px;">
+            <input id="tHours"   type="number" min="0" placeholder="hh" style="width:55px;text-align:center;">
+            <input id="tMinutes" type="number" min="0" placeholder="mm" style="width:55px;text-align:center;">
+            <input id="tSeconds" type="number" min="0" placeholder="ss" style="width:55px;text-align:center;">
+        </div>
+
+        <div id="tDisplay" class="clock" style="font-size:1.6rem;">00:00:00</div>
+
+        <div style="margin-top:8px;">
+            <button id="tStart" class="top-button">Start</button>
+            <button id="tPause" class="top-button">Pause</button>
+            <button id="tReset" class="top-button">Reset</button>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ============================================== -->
+<!-- ===== JAVASCRIPT SECTION (BEGIN PART) ======== -->
+<!-- ============================================== -->
+
+<script>
+/* ====== THEME + INSTALL + HIDE/SHOW PANELS ====== */
+(function initUI() {
+    const installBtn = document.getElementById("installBtn");
+    const themeToggle = document.getElementById("themeToggle");
+    const restoreBtn = document.getElementById("restoreBtn");
+    let deferredPrompt = null;
+
+    /* Theme restore */
+    const savedTheme = localStorage.getItem("multiClockTheme");
+    if (savedTheme === "dark") {
+        document.body.classList.add("dark");
+        themeToggle.textContent = "☀ Light Mode";
+    }
+
+    themeToggle.onclick = () => {
+        const dark = document.body.classList.toggle("dark");
+        themeToggle.textContent = dark ? "☀ Light Mode" : "🌙 Dark Mode";
+        localStorage.setItem("multiClockTheme", dark ? "dark" : "light");
+    };
+
+    /* Install PWA */
+    window.addEventListener("beforeinstallprompt", e => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.style.display = "inline-block";
+    });
+
+    installBtn.onclick = async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const res = await deferredPrompt.userChoice;
+        if (res.outcome === "accepted") {
+            deferredPrompt = null;
+            installBtn.style.display = "none";
+        }
+    };
+
+    /* Persistent Hide/Show Panels */
+    const KEY = "multiClockHidden";
+    const loadHidden = () => JSON.parse(localStorage.getItem(KEY) || "[]");
+    const saveHidden = arr => localStorage.setItem(KEY, JSON.stringify(arr));
+
+    const hidden = loadHidden();
+    hidden.forEach(id => {
+        const el = document.querySelector('.card[data-card-id="'+id+'"]');
+        if (el) el.style.display = "none";
+    });
+
+    restoreBtn.onclick = () => {
+        document.querySelectorAll(".card").forEach(c => (c.style.display="block"));
+        saveHidden([]);
+    };
+
+    window._panelStore = { loadHidden, saveHidden };
+})();
+/* Global Hide Button Function */
+function hideCard(btn) {
+    const card = btn.closest(".card");
+    const id = card.dataset.cardId;
+
+    card.style.display = "none";
+
+    const { loadHidden, saveHidden } = window._panelStore;
+    const list = loadHidden();
+    if (!list.includes(id)) {
+        list.push(id);
+        saveHidden(list);
+    }
+}
+
+/* ===== GPS — On Demand Only ===== */
+function updateGPS() {
+    const box = document.getElementById("gpsBox");
+
+    if (!navigator.geolocation) {
+        box.innerHTML = "GPS not supported.";
+        return;
+    }
+
+    box.innerHTML = "Locating...";
+
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+
+            const ns = lat >= 0 ? "N" : "S";
+            const ew = lon >= 0 ? "E" : "W";
+
+            const latAbs = Math.abs(lat).toFixed(5);
+            const lonAbs = Math.abs(lon).toFixed(5);
+
+            let tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+            box.innerHTML =
+                `Lat: ${latAbs}° ${ns}<br>` +
+                `Lon: ${lonAbs}° ${ew}<br>` +
+                `Timezone: ${tz}`;
+        },
+        err => {
+            if (err.code === 1) box.innerHTML = "Location denied.";
+            else box.innerHTML = "Location unavailable.";
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    );
+}
+document.getElementById("gpsBtn").onclick = updateGPS;
+
+
+/* ===== Sunrise/Sunset Helper Functions ===== */
+function degToRad(x){ return x*Math.PI/180; }
+function radToDeg(x){ return x*180/Math.PI; }
+
+function dayOfYear(d){
+    const s=new Date(d.getFullYear(),0,0);
+    return Math.floor((d-s)/86400000);
+}
+
+/* ===== CORRECTED SUNRISE / SUNSET CALC (NO duplicate variable names!) ===== */
+function calcSunTime(date,lat,lon,tz,isRise){
+    const Z = 90.833;
+    const N = dayOfYear(date);
+    const lngHour = lon / 15;
+
+    const t = N + ((isRise ? 6 : 18) - lngHour)/24;
+
+    const M = 0.9856*t - 3.289;
+
+    const Ls = M + 1.916*Math.sin(degToRad(M)) + 0.02*Math.sin(2*degToRad(M)) + 282.634;
+    const LL = ((Ls % 360) + 360) % 360;
+
+    const RA = radToDeg(Math.atan(0.91764*Math.tan(degToRad(LL))));
+    const RAa = ((RA % 360) + 360) % 360;
+
+    const LQ = Math.floor(LL/90)*90;
+    const RAQ = Math.floor(RAa/90)*90;
+    const R = (RAa + (LQ-RAQ)) / 15;
+
+    const sinD = 0.39782 * Math.sin(degToRad(LL));
+    const cosD = Math.cos(Math.asin(sinD));
+
+    const cosH = (Math.cos(degToRad(Z)) - sinD*Math.sin(degToRad(lat))) /
+                 (cosD * Math.cos(degToRad(lat)));
+
+    if (cosH > 1 || cosH < -1) return "N/A";
+
+    let H = isRise ? (360 - radToDeg(Math.acos(cosH))) : radToDeg(Math.acos(cosH));
+    H /= 15;
+
+    const T = H + R - 0.06571*t - 6.622;
+    const UT = T - lngHour;
+
+    const localH = ((UT + tz) % 24 + 24) % 24;
+
+    let hh = Math.floor(localH);
+    let mm = Math.round((localH - hh)*60);
+
+    if (mm === 60) { mm = 0; hh = (hh+1) % 24; }
+
+    return String(hh).padStart(2,"0") + ":" + String(mm).padStart(2,"0");
+}
+
+/* Coordinates for Sunrise/Sunset */
+const SUNLOCS = {
+    pt:{lat:49.28, lon:-123.12, off:-8},
+    mt:{lat:53.54, lon:-113.49, off:-7},
+    ct:{lat:49.89, lon:-97.13,  off:-6},
+    et:{lat:43.65, lon:-79.34,  off:-5},
+    at:{lat:44.64, lon:-63.57,  off:-4},
+    nt:{lat:47.56, lon:-52.71,  off:-3.5},
+    sk:{lat:50.44, lon:-104.61, off:-6},
+    yk:{lat:60.72, lon:-135.05, off:-7},
+    nu:{lat:64.13, lon:-83.17,  off:-5}
+};
+
+function updateSun(id, key){
+    const loc = SUNLOCS[key];
+    const S = calcSunTime(new Date(), loc.lat, loc.lon, loc.off, true);
+    const T = calcSunTime(new Date(), loc.lat, loc.lon, loc.off, false);
+    document.getElementById(id).textContent = `Sunrise: ${S} | Sunset: ${T}`;
+}
+
+/* ===== CLOCK UPDATES ===== */
+function updateClock(id, zone){
+    document.getElementById(id).textContent =
+        new Date().toLocaleTimeString("en-CA", {
+            timeZone: zone,
+            hour:"2-digit", minute:"2-digit", second:"2-digit"
+        });
+}
+function updateDate(id, zone){
+    document.getElementById(id).textContent =
+        new Date().toLocaleDateString("en-CA", {
+            timeZone: zone,
+            weekday:"short", year:"numeric", month:"2-digit", day:"2-digit"
+        });
+}
+
+/* Master Update */
+function updateAll(){
+    updateClock("pt","America/Vancouver"); updateDate("ptd","America/Vancouver"); updateSun("ptSun","pt");
+    updateClock("mt","America/Edmonton");  updateDate("mtd","America/Edmonton");  updateSun("mtSun","mt");
+    updateClock("ct","America/Winnipeg");  updateDate("ctd","America/Winnipeg");  updateSun("ctSun","ct");
+    updateClock("et","America/Toronto");   updateDate("etd","America/Toronto");   updateSun("etSun","et");
+    updateClock("at","America/Halifax");   updateDate("atd","America/Halifax");   updateSun("atSun","at");
+    updateClock("nt","America/St_Johns");  updateDate("ntd","America/St_Johns");  updateSun("ntSun","nt");
+
+    updateClock("sk","America/Regina");          updateDate("skd","America/Regina");         updateSun("skSun","sk");
+    updateClock("yk","America/Whitehorse");      updateDate("ykd","America/Whitehorse");     updateSun("ykSun","yk");
+    updateClock("nu","America/Coral_Harbour");   updateDate("nud","America/Coral_Harbour");  updateSun("nuSun","nu");
+
+    updateWorld();
+}
+setInterval(updateAll,1000);
+updateAll();
+
+/* ===== WORLD CLOCK ===== */
+function updateWorld(){
+    const zone = document.getElementById("worldZone").value;
+    updateClock("worldClock", zone);
+    updateDate("worldDate", zone);
+}
+document.getElementById("worldZone").onchange = updateWorld;
+
+/* ===== STOPWATCH ===== */
+let swInt=null, swRun=false, swStart=0, swElapsed=0, lapCount=0;
+const swDisp=document.getElementById("swDisplay");
+const lapList=document.getElementById("lapList");
+
+function fmtSW(ms){
+    let s = Math.floor(ms/1000);
+    let h = Math.floor(s/3600);
+    let m = Math.floor((s%3600)/60);
+    let sec = s%60;
+    let t = Math.floor((ms%1000)/100);
+    return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}.${t}`;
+}
+
+function tickSW(){
+    swElapsed = Date.now() - swStart;
+    swDisp.textContent = fmtSW(swElapsed);
+}
+
+document.getElementById("swStart").onclick=()=>{
+    if(!swRun){ swRun=true; swStart=Date.now()-swElapsed; swInt=setInterval(tickSW,100); }
+};
+document.getElementById("swStop").onclick=()=>{
+    if(swRun){ swRun=false; clearInterval(swInt); tickSW(); }
+};
+document.getElementById("swLap").onclick=()=>{
+    if(swElapsed>0){
+        lapCount++;
+        const li=document.createElement("li");
+        li.textContent=`Lap ${lapCount}: ${fmtSW(swElapsed)}`;
+        lapList.prepend(li);
+    }
+};
+document.getElementById("swReset").onclick=()=>{
+    swRun=false; clearInterval(swInt); swElapsed=0;
+    swDisp.textContent="00:00:00.0"; lapList.innerHTML=""; lapCount=0;
+};
+
+/* ===== TIMER ===== */
+let tInt=null, tLeft=0, tRun=false;
+const tDisp=document.getElementById("tDisplay");
+
+function fmtTimer(ms){
+    const s=Math.max(0,Math.floor(ms/1000));
+    const h=Math.floor(s/3600);
+    const m=Math.floor((s%3600)/60);
+    const sec=s%60;
+    return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
+}
+
+function tickTimer(){
+    tLeft -= 1000;
+    if(tLeft <= 0){
+        clearInterval(tInt); tRun=false;
+        tLeft=0; tDisp.textContent="00:00:00";
+        alert("Timer done!");
+    } else {
+        tDisp.textContent = fmtTimer(tLeft);
+    }
+}
+
+document.getElementById("tStart").onclick=()=>{
+    if(!tRun){
+        if(tLeft<=0){
+            const h = +document.getElementById("tHours").value||0;
+            const m = +document.getElementById("tMinutes").value||0;
+            const s = +document.getElementById("tSeconds").value||0;
+            tLeft = (h*3600 + m*60 + s)*1000;
+            if(tLeft<=0) return;
+        }
+        tRun=true; tInt=setInterval(tickTimer,1000);
+    }
+};
+
+document.getElementById("tPause").onclick=()=>{
+    if(tRun){ tRun=false; clearInterval(tInt); }
+};
+
+document.getElementById("tReset").onclick=()=>{
+    tRun=false; clearInterval(tInt);
+    tLeft=0; tDisp.textContent="00:00:00";
+};
+
+/* ===== Service Worker ===== */
+if ("serviceWorker" in navigator){
+    window.addEventListener("load", ()=>{
+        navigator.serviceWorker.register("sw.js");
+    });
+}
+</script>
+</script>
+
+<!-- ⬇ INSERT FOOTER HERE ⬇ -->
+<footer style="
+    margin-top: 28px;
+    padding: 14px 0;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--subtle);
+">
+    © 2025 Glen Carruthers • All Rights Reserved
+    <div style="font-size: 0.85rem; margin-top: 4px;">
+        multi-clock v2.3.3 — Embedded PWA • DST + World Clock + GPS
+    </div>
+</footer>
+<!-- ⬆ END FOOTER ⬆ -->
+
+</body>
+</html>
+
+</body>
+</html>
